@@ -11,8 +11,6 @@ using System.Data;
 
 public class Menu : MonoBehaviour
 {
-    static string dbUri = "URI=file:";
-
     [MenuItem("Tools/CityGen3D/Integrations/Internet Of Energy Network/Add NanoGrids to Model")]
     public static void AddNanoGridsToModel()
     {
@@ -64,8 +62,8 @@ public class Menu : MonoBehaviour
                 string buildingAddress = "";
                 if (mapBuilding.way.tags.Find(tag => tag.key == "addr:housenumber") != null)
                 {
-                    nanoGrid.housenumber = mapBuilding.way.tags.Find(tag => tag.key == "addr:housenumber").value;
-                    buildingAddress += nanoGrid.housenumber + " ";
+                    nanoGrid.houseNumber = mapBuilding.way.tags.Find(tag => tag.key == "addr:housenumber").value;
+                    buildingAddress += nanoGrid.houseNumber + " ";
                 }
                 if (mapBuilding.way.tags.Find(tag => tag.key == "addr:street") != null) {
                     nanoGrid.street = mapBuilding.way.tags.Find(tag => tag.key == "addr:street").value;
@@ -76,8 +74,8 @@ public class Menu : MonoBehaviour
                     buildingAddress += nanoGrid.suburb + " ";
                 }
                 if (mapBuilding.way.tags.Find(tag => tag.key == "addr:postcode") != null) {
-                    nanoGrid.postcode = mapBuilding.way.tags.Find(tag => tag.key == "addr:postcode").value;
-                    buildingAddress += nanoGrid.postcode + " ";
+                    nanoGrid.postCode = mapBuilding.way.tags.Find(tag => tag.key == "addr:postcode").value;
+                    buildingAddress += nanoGrid.postCode + " ";
                 }
                 if (mapBuilding.way.tags.Find(tag => tag.key == "addr:state") != null) {
                     nanoGrid.state = mapBuilding.way.tags.Find(tag => tag.key == "addr:state").value;
@@ -103,20 +101,64 @@ public class Menu : MonoBehaviour
     {
         string path = EditorUtility.OpenFolderPanel("Select the folder to store IOENWorld databases", "", "");
         if (path.Length == 0) return;
-        dbUri += path + "/IOENWorld" + DateTime.Now.ToString("yyyyMMddHHmm") + ".db";
+        string dbUri = "URI=file:" + path + "/IOENWorld" + DateTime.Now.ToString("yyyyMMddHHmm") + ".db";
         Debug.Log(dbUri);
         IDbConnection dbConnection = new SqliteConnection(dbUri);
         dbConnection.Open();
         IDbCommand dbCommandCreateTable = dbConnection.CreateCommand();
-        dbCommandCreateTable.CommandText = "CREATE TABLE IF NOT EXISTS Nanogrids (building_name TEXT PRIMARY KEY, house_number TEXT, street TEXT, suburb TEXT, state TEXT, postcode TEXT, network_id TEXT, network_name TEXT, networkIndex REAL, power TEXT, source TEXT)";
+        dbCommandCreateTable.CommandText = "CREATE TABLE IF NOT EXISTS Nanogrids (building_name TEXT PRIMARY KEY, house_number TEXT, street TEXT, suburb TEXT, state TEXT, postcode TEXT, network_name TEXT, networkIndex REAL, power TEXT, source TEXT)";
         dbCommandCreateTable.ExecuteReader();
 
         NanoGrid[] nanoGrids = FindObjectsOfType<NanoGrid>();
         foreach(NanoGrid nanoGrid in nanoGrids)
         {
             IDbCommand dbCommandInsertValue = dbConnection.CreateCommand(); // 9
-            dbCommandInsertValue.CommandText = "INSERT INTO Nanogrids (building_name, house_number, street, suburb, state, postcode, network_id, network_name, networkIndex, power, source) VALUES (\"" + nanoGrid.name + "\", \"" + nanoGrid.housenumber + "\", \"" + nanoGrid.street + "\", \"" + nanoGrid.suburb + "\", \"" + nanoGrid.state + "\", \"" + nanoGrid.postcode + "\", \"" + nanoGrid.networkId + "\", \"" + nanoGrid.networkName + "\", " + nanoGrid.networkIndex + ", \"" + nanoGrid.power + "\", \"" + nanoGrid.source + "\")";
+            dbCommandInsertValue.CommandText = "INSERT INTO Nanogrids (building_name, house_number, street, suburb, state, postcode, network_name, networkIndex, power, source) VALUES (\"" + nanoGrid.buildingName + "\", \"" + nanoGrid.houseNumber + "\", \"" + nanoGrid.street + "\", \"" + nanoGrid.suburb + "\", \"" + nanoGrid.state + "\", \"" + nanoGrid.postCode + "\", \"" + nanoGrid.networkName + "\", " + nanoGrid.networkIndex + ", \"" + nanoGrid.power + "\", \"" + nanoGrid.source + "\")";
             dbCommandInsertValue.ExecuteNonQuery(); // 11
+        }
+    }
+
+    [MenuItem("Tools/CityGen3D/Integrations/Internet Of Energy Network/Update Model from Database")]
+    public static void UpdateModelFromDatabase()
+    {
+        string path = EditorUtility.OpenFilePanel("Select the folder to store IOENWorld databases", "", "db");
+        if (path.Length == 0) return;
+        string dbUri = "URI=file:" + path;
+        Debug.Log(dbUri);
+        IDbConnection dbConnection = new SqliteConnection(dbUri);
+        dbConnection.Open();
+        IDbCommand dbCommandReadValues = dbConnection.CreateCommand();
+        dbCommandReadValues.CommandText = "SELECT * FROM Nanogrids";
+        IDataReader dataReader = dbCommandReadValues.ExecuteReader();
+
+        NanoGrid[] nanoGrids = FindObjectsOfType<NanoGrid>();
+
+        while (dataReader.Read())
+        {
+            string buildingname = dataReader.GetString(0);
+            string houseNumber = dataReader.GetString(1);
+            string street = dataReader.GetString(2);
+            string suburb = dataReader.GetString(3);
+            string state = dataReader.GetString(4);
+            string postCode = dataReader.GetString(5);
+            string networkName = dataReader.GetString(6);
+            //int networkIndex = dataReader.get(8);
+            string power = dataReader.GetString(8);
+            string source = dataReader.GetString(9);
+
+            Debug.Log(buildingname);
+
+            NanoGrid nanoGrid = Array.Find(nanoGrids, ele => ele.buildingName == buildingname.Replace("NanoGrid - ", ""));
+            nanoGrid.buildingName = buildingname;
+            nanoGrid.houseNumber = houseNumber;
+            nanoGrid.street = street;
+            nanoGrid.suburb = suburb;
+            nanoGrid.state = state;
+            nanoGrid.postCode = postCode;
+            nanoGrid.networkName = networkName;
+            //nanoGrid.networkIndex = networkIndex;
+            nanoGrid.power = power;
+            nanoGrid.source = source;
         }
     }
 }

@@ -10,10 +10,10 @@ public class NanoGrid : MonoBehaviour
     [SerializeField] public int networkIndex;
     [SerializeField] public int index;
     [SerializeField] public float size;
-    [SerializeField] public string housenumber = "";
+    [SerializeField] public string houseNumber = "";
     [SerializeField] public string street = "";
     [SerializeField] public string suburb = "";
-    [SerializeField] public string postcode = "";
+    [SerializeField] public string postCode = "";
     [SerializeField] public string state = "";
     [SerializeField] public string power = "";
     [SerializeField] public string source = "";
