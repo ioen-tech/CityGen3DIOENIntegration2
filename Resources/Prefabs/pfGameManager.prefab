@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4673980882582005814}
   - component: {fileID: 7870563817243391092}
+  - component: {fileID: 7600477992523541705}
   m_Layer: 0
   m_Name: pfGameManager
   m_TagString: Untagged
@@ -44,3 +45,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65c17b9dfa8da43d88989de70ea0aa1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  timeIntervalSeconds: 1800
+  timeSpeedFactor: 1
+  startMonth: 1
+  startHour: 9
+--- !u!114 &7600477992523541705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5638031705425016924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3142102db72a94d09978a5a4341e88ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  intervalFiles: 5
+  averageSolarSystemSize: 6.6
+  averageStorageSystemSize: 6.6
+  growthTimeDays: 7
+  solarInstallDays: 5
+  solarInstallCapacity: 1
+  greenEnergyMix: 36
+  rootPath: /Users/philipbeadle/IOEN/AEMO/IntervalData

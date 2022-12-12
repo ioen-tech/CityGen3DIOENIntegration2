@@ -34,7 +34,7 @@ public class GameManager : MonoBehaviour
             Debug.Log("Time Speed Factor Too fast, reducing it by 20%");
             SetTimeSpeedFactor((int)(timeSpeedFactor * 0.8));
         }
-        gameTime += Time.deltaTime * timeSpeedFactor;
+        if (IoenManager.Instance.IsReady()) gameTime += Time.deltaTime * timeSpeedFactor;
     }
 
     public int GetStartSeconds()
