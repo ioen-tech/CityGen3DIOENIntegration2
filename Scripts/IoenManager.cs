@@ -29,7 +29,8 @@ public class IoenManager : MonoBehaviour
     private bool ready = false;
     private Queue<NanoGrid> nanogridsForSolarInstall = new Queue<NanoGrid>();
     private float timeToNextInstall = 0;
-
+    private Transform[] allTransforms;
+    private NanoGrid[] nanoGrids;
 
     private Dictionary<PowerType, float> intervalAmountDictionary = new Dictionary<PowerType, float>();
     private Dictionary<PowerType, float> totalAmountDictionary = new Dictionary<PowerType, float>();
@@ -100,6 +101,12 @@ public class IoenManager : MonoBehaviour
             }
         }
         Debug.Log("IOEN Manager Awake " + IsReady());
+    }
+
+    private void Start()
+    {
+        allTransforms = FindObjectsOfType<Transform>();
+        nanoGrids = FindObjectsOfType<NanoGrid>();
     }
 
     private void Update()
@@ -204,14 +211,28 @@ public class IoenManager : MonoBehaviour
         }
         if (nanoGrid.supplyAgreements.Count == 0)
         {
-            List<NanoGrid> suppliers = energyNetwork.nanoGrids.FindAll(energyNetwork => energyNetwork.source == "solar");
+            Debug.Log("Supply Agreements: " + nanoGrid.buildingName);
+
+            List<NanoGrid> suppliers = energyNetwork.nanoGrids.FindAll(ng => ng.source == "solar" || ng.installScheduled == true);
             suppliers.Sort((x, y) => DateTime.Compare(x.dateStartedGenerating, y.dateStartedGenerating));
             int supplyAgreementIndex = 0;
             foreach(NanoGrid supplier in suppliers)
             {
                 if (supplyAgreementIndex >= energyNetwork.numberOfSupplyAgreements) break;
                 Debug.Log(supplier);
-                SupplyAgreement supplyAgreement = new SupplyAgreement();
+                string buildingAddress = "";
+                if (nanoGrid.houseNumber != "") buildingAddress = nanoGrid.houseNumber + " ";
+                if (nanoGrid.street != "") buildingAddress += nanoGrid.street + " ";
+                if (nanoGrid.state != "") buildingAddress += nanoGrid.state + " ";
+                if (nanoGrid.postCode != "") buildingAddress += nanoGrid.postCode; ;
+                string id = nanoGrid.buildingName;
+                if (buildingAddress != "") id = buildingAddress;
+                Transform nanoGridTransform = Array.Find(allTransforms, ele => ele.name == "NanoGrid - " + id);
+                GameObject supplyAgreementObject = Instantiate(Resources.Load("Prefabs/pfSupplyAgreement", typeof(GameObject))) as GameObject;
+                supplyAgreementObject.transform.parent = nanoGridTransform.transform;
+                supplyAgreementObject.name = "SupplyAgreement - " + supplier.buildingName;
+                supplyAgreementObject.SetActive(true);
+                SupplyAgreement supplyAgreement = supplyAgreementObject.GetComponent<SupplyAgreement>();
                 supplyAgreement.SetConsumerNanoGrid(nanoGrid);
                 supplyAgreement.SetSupplierNanoGrid(supplier);
                 supplyAgreement.SetTariffIoenFuel(energyNetwork.tariffIoenFuel);
